@@ -53,4 +53,66 @@ async def main():
 
                             # Get parent post context if available
                             context=''
-                            
+                            if record.reply:
+                                try:
+                                    parent_post = await bluesky_client.get_post(record.reply.parent.uri)
+                                    context = f"Post being discussed:\n{parent_post.text}"
+                                except Exception as e:
+                                    print(f"Couldn't fetch parent post: {e}")
+
+
+                            # Clean query text
+                            query = record.text.replace(f"@{bot_handle}", "").strip()
+
+                            # Response
+                            response = openai_client.chat.completions.create(
+                                model='gpt-4o-mini',
+                                messages=[
+                                    {'role': 'system', 'content': SYSTEM_PROMPT},
+                                    {'role': 'user', 'content': f"{context}\n\nUser's rewuest: {query}"}
+                                ],
+                                max_tokens=200
+                            ).choices[0].message.content.strip()
+
+                            response = response[:280]
+
+                            rkey = op.path.split('/')[-1]
+                            parent_uri = f"at://{message.repo}/app.bsky.feed.post/{rkey}"
+                            parent_cid = op.cid
+
+                            if record.reply:
+                                root_uri = record.reply.root.uri
+                                root_cid = record.reply.root.cid
+                            else:
+                                root_uri = parent_uri
+                                root_cid = parent_cid
+
+                            reply_ref = models.AppBskyFeedPost.ReplyRef(
+                                parent=models.AppBskyFeedPost.ReplyRefParent(
+                                    uri=parent_uri,
+                                    cid=parent_cid
+                                ),
+                                root=models.AppBsjyFeedPost.RepltTefRoot(
+                                    uri=root_uri,
+                                    cid=root_cid
+                                )
+                            )
+
+                            await bluesky_client.send_post(
+                                text=response,
+                                reply=reply_ref
+                            )
+                            print(f"Posted response: {response}")
+
+                    except Exception as e:
+                        print(f"Error processing post: {e}")
+
+    await bluesky_client.subscribe_repos(on_message)
+
+if __name__ = '__main__':
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(main())
+
+    except KeyboardInterrupt:
+        print('Bot stopped.')
