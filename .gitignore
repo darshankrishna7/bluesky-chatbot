@@ -22,3 +22,49 @@ logs/
 
 # System
 .DS_Store
+
+# ----------------------
+# Dependencies & Build
+# ----------------------
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+jspm_packages/
+
+# ----------------------
+# Environment & Secrets
+# ----------------------
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.env
+.secret*
+credentials.json
+
+# ----------------------
+# Testing & Coverage
+# ----------------------
+coverage/
+.nyc_output/
+*.lcov
+
+# ----------------------
+# Logs & Temp Files
+# ----------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+tmp/
+temp/
+
+# ----------------------
+# OS & Miscellaneous
+# ----------------------
+Thumbs.db
+ehthumbs.db
+*.orig
